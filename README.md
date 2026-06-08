@@ -1,4 +1,4 @@
-# Eco Story — 포트폴리오
+# 에코스토리 Eco Story
 
 ## 프로젝트 개요
 
