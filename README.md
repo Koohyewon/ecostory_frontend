@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+# Eco Story — 포트폴리오
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 프로젝트 개요
 
-## Available Scripts
+**Eco Story**는 사용자가 자신만의 친환경 실천 목표를 세우고, 주차별로 체크하며, 달성 내역을 게시글로 기록해 공유하는 환경 실천 웹 서비스입니다. 카카오 맵 기반의 환경 데이터 시각화와 가이드북 형태의 실천 목록 제공을 결합해, 단순한 기록을 넘어 실천의 동기를 부여하는 서비스를 목표로 설계했습니다.
 
-In the project directory, you can run:
+- **기간:** 2024년 (팀 프로젝트)
+- **팀 구성:** 프론트엔드 2인, 백엔드 참여
+- **배포:** GitHub Pages
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 기술 스택
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+| 분류 | 사용 기술 |
+|------|-----------|
+| 프레임워크 | React 18 |
+| 라우팅 | React Router DOM v6 |
+| HTTP 통신 | Axios |
+| 스타일링 | Tailwind CSS |
+| 이미지 업로드 | react-images-uploading |
+| 이미지 크롭 | react-easy-crop |
+| 이미지 리사이징 | react-image-file-resizer |
+| 지도 | Kakao Maps API |
+| 애니메이션 | react-lottie-player |
+| 인증 | JWT (localStorage) |
+| 배포 | gh-pages |
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 내가 담당한 부분
 
-### `npm run build`
+### 1. 공통 레이아웃 — 헤더 & 사이드 프로필 바
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+서비스 전체에서 공유되는 레이아웃 컴포넌트를 설계하고 구현했습니다. 로그인 상태에 따라 두 가지 버전으로 분기되도록 구성했습니다(`Header_AfterLogin`, `Header_BeforeLogin`, `Sidebar_AfterLogin`, `Sidebar_BeforeLogin`).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+로그인 후 헤더는 단순한 내비게이션 바가 아니라 이번 주 체크리스트 진행 상황을 실시간으로 표시하는 역할도 겸합니다. 헤더 내부에서 체크리스트 API(`/guide/sidebar/:userId`)를 호출해 현재 월·주 기준의 실천 목록을 불러오고, 항목별 체크/언체크 동작을 저장 API(`/guide/savesidebar/:userId`)와 연동했습니다. 사이드바 역시 같은 데이터를 기반으로 주간 성공률 진행바와 체크박스 목록을 렌더링합니다.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+반응형 처리에서는 640px 이하 모바일 환경에서 사이드바를 숨기고 헤더에 드롭다운 방식의 메뉴를 열어 동일한 기능을 이용할 수 있도록 했습니다. Tailwind CSS의 반응형 클래스(`sm:`, `md:`)를 적극 활용해 레이아웃 분기 로직을 최소화했습니다.
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 2. 체크리스트 만들기 페이지
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+가이드북에서 카테고리를 선택하면 해당 카테고리의 실천 항목 목록이 표시되고, 원하는 항목을 골라 이번 달 개인 체크리스트로 등록하는 기능을 구현했습니다.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+체크리스트 현황 페이지(`ChecklistState`)에서는 이번 주의 성공·실패 항목을 구분해 보여주고, 전체 성공률을 진행바로 시각화합니다. 월/주 단위로 필터링하는 API 파라미터(`month`, `WeekNumber`)를 직접 설계해 백엔드와 맞췄습니다.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+### 3. 내 프로필 페이지 & 게시글 CRUD
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+`Profile.js`는 서비스에서 가장 많은 기능이 집약된 페이지입니다. 인스타그램과 유사한 3열 그리드 피드 구조로 내 게시글을 표시하며, 프로필 이미지·닉네임 수정부터 게시글 등록·수정·삭제까지 전체 흐름을 담당했습니다.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+**게시글 등록 / 수정 (`PostingModal`)**
 
-### Code Splitting
+게시글 작성 시 이미지 업로드, 크롭, 리사이징, 서버 전송까지 이미지 처리 파이프라인 전체를 직접 구현했습니다.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1. `react-images-uploading`으로 로컬 파일을 받아 미리보기를 띄웁니다.
+2. 사용자가 "편집" 버튼을 누르면 `ImgCropModal`이 열립니다. `react-easy-crop`을 이용해 4:5 비율로 원하는 영역을 선택할 수 있으며, 줌 조절도 지원합니다.
+3. 확인 후 `CropUtils.js`의 `getCroppedImg` 함수가 Canvas API를 통해 실제 픽셀 좌표를 계산하고 잘라낸 이미지를 생성합니다.
+4. `react-image-file-resizer`로 최대 300×300px, JPEG 품질 90%로 압축한 뒤 Base64로 인코딩해 서버에 전송합니다.
 
-### Analyzing the Bundle Size
+작성 API는 `POST /user/mypage/:userId/post`, 수정 API는 `PUT /user/mypage/:userId/update`로 분리했으며, 수정 시에는 기존 게시글 ID와 변경된 이미지·텍스트를 함께 전달합니다. 텍스트 입력 영역은 내용 길이에 따라 높이가 자동으로 늘어나도록 구현했습니다.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+**게시글 상세 & 삭제 (`PostModal`)**
 
-### Making a Progressive Web App
+게시글 썸네일을 클릭하면 `PostModal`이 열려 이미지와 텍스트를 전체 크기로 볼 수 있습니다. 본인 게시글에 한해 수정·삭제 버튼이 표시되며, 삭제는 `DELETE /user/mypage/:userId/delete`를 호출합니다. 삭제 완료 후에는 UI 목록에서도 즉시 제거되도록 상태를 업데이트했습니다.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+**게시글 공유**
 
-### Advanced Configuration
+각 게시글에는 `/share/:userId/:postId` 형태의 고유 URL이 부여되며, 공유 버튼을 누르면 해당 링크가 클립보드에 복사됩니다. HTTP 환경에서 `navigator.clipboard`가 차단되는 문제를 실제 배포 후 발견하고, `document.execCommand` 폴백 처리를 추가해 해결했습니다.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+**프로필 수정**
 
-### Deployment
+프로필 이미지 변경 시에도 동일한 리사이징 파이프라인을 거쳐 Base64로 변환한 뒤 `PUT /user/profile/:userId/update`로 전송합니다. 닉네임과 이미지는 함께 또는 개별로 수정 가능하도록 상태를 분리해 관리했습니다.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## 배운 점과 성장
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+이 프로젝트는 제가 처음으로 실전 웹 서비스를 만들어본 경험입니다. HTML·CSS 기초를 막 배운 시점에 곧바로 React 기반 팀 프로젝트에 뛰어들었고, 교재를 따라가며 배우는 것이 아니라 실제로 동작해야 하는 기능 앞에서 필요한 것을 부딪혀 익혔습니다.
+
+가장 난항을 겪은 부분은 이미지 처리 파이프라인이었습니다. 이미지를 올리는 것 자체는 라이브러리로 쉽게 됐지만, 크롭 좌표를 계산해 Canvas로 실제 픽셀을 잘라내고, 그 결과를 서버가 받을 수 있는 형태로 변환하는 과정은 Canvas API와 Base64 인코딩에 대한 이해 없이는 해결할 수 없었습니다. 공식 문서와 코드를 반복해서 읽으며 `getCroppedImg`가 어떤 좌표 정보를 받아 어떻게 새 이미지를 만들어내는지 직접 따라가봤고, 그 과정에서 브라우저가 이미지를 다루는 방식 자체를 이해하게 됐습니다.
+
+배포 후에 클립보드 복사가 HTTP에서 작동하지 않는다는 문제를 발견한 것도 기억에 남습니다. 로컬에서는 문제없이 동작했기 때문에 원인을 찾는 데 시간이 걸렸지만, 브라우저 보안 정책 때문에 `navigator.clipboard`가 HTTPS 또는 localhost에서만 허용된다는 것을 파악하고 폴백 처리를 추가했습니다. 실제 사용자 환경에서만 드러나는 문제가 있다는 것을 처음으로 체감한 경험이었습니다.
+
+이 프로젝트 이후로는 React의 상태 흐름이나 컴포넌트 분리에 대한 감각이 생겼고, 다음 프로젝트에서는 처음부터 구조를 더 의식적으로 설계하면서 작업할 수 있게 됐습니다. 첫 프로젝트에서 혼란스러웠던 것들이 다음 프로젝트에서는 자연스러운 선택이 되어 있었고, 그 간격이 제가 이 프로젝트에서 실제로 얼마나 많이 성장했는지를 보여주는 척도라고 생각합니다.
